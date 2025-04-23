@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Traffic Sign Recognition</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            background: #ffffff;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-text {
+            text-align: center;
+            margin: 40px 0 30px 0;
+        }
+
+        .hero-text h2 {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .main-section {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .row.align-items-start {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .left-img {
+            flex: 0 0 30%;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .left-img img {
+            width: 90%;
+            max-width: 250px;
+            /* border-radius: 10px; */
+            /* box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1); */
+        }
+
+        .upload-box {
+            flex: 0 0 65%;
+            background: #f0f9ff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            margin-left: 20px;
+            text-align: center;
+        }
+
+        .upload-box h3 {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .btn-custom-blue {
+            background-color: #007bff;
+            color: #fff;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom-blue:hover {
+            background-color: #0056b3;
+        }
+
+        #preview-img {
+            width: 100%;
+            max-width: 250px;
+            border-radius: 10px;
+            display: none;
+            margin: 20px auto 0 auto;
+            /* display: block; <- remove this line */
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 500;
+            display: none;
+        }
+
+        @media screen and (max-width: 768px) {
+            .row.align-items-start {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .left-img,
+            .upload-box {
+                width: 90%;
+                margin: 10px auto;
+            }
+
+            .upload-box {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand mx-auto" href="#">🚦 Traffic Sign AI</a>
+        </div>
+    </nav>
+
+    <!-- Hero Heading -->
+    <div class="hero-text">
+        <h2>Traffic Sign Recognition Using Deep Learning</h2>
+    </div>
+
+    <!-- Two Column Section -->
+    <div class="container main-section">
+        <div class="row align-items-start">
+            <!-- Left Image -->
+            <div class="left-img">
+                <img src="https://i.postimg.cc/rFYVTRnN/yellow-traffic-sign-set-isolated-white-background-97458-258.jpg"
+                    alt="Traffic Sign Example" />
+            </div>
+
+            <!-- Right Upload Form -->
+            <div class="upload-box">
+                <h3>Upload a Traffic Sign Image</h3>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="file" class="form-control-file" id="file-input" name="file" accept="image/*"
+                        required /> <br>
+                    <button type="submit" class="btn btn-custom-blue">Predict</button>
+                </form>
+
+                <img id="preview-img" src="#" alt="Preview" class="img-thumbnail" />
+
+                <div class="result-box" id="result-box">
+                    <p><strong>Prediction Result:</strong> <span id="prediction-label"></span></p>
+                    <p><strong>Confidence:</strong> <span id="prediction-confidence"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script>
+        const form = document.getElementById('upload-form');
+        const fileInput = document.getElementById('file-input');
+        const previewImg = document.getElementById('preview-img');
+        const resultBox = document.getElementById('result-box');
+        const labelSpan = document.getElementById('prediction-label');
+        const confidenceSpan = document.getElementById('prediction-confidence');
+
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const res = await fetch('/predict', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await res.json();
+
+            if (result.error) {
+                alert(result.error);
+                resultBox.style.display = 'none';
+            } else {
+                labelSpan.textContent = result.label;
+                confidenceSpan.textContent = result.confidence;
+                resultBox.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>
